@@ -1,0 +1,1 @@
+# Hasta teşhisinde Makine Öğrenimi
