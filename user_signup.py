@@ -1,7 +1,10 @@
+import re
+import sqlite3
 import sys
-
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout, QFormLayout, QComboBox
+from PyQt5.QtGui import QIcon, QRegularExpressionValidator
+from PyQt5.QtWidgets import (QApplication, QWidget, QLabel,
+                             QLineEdit, QPushButton, QVBoxLayout,
+                             QFormLayout, QComboBox, QMessageBox)
 
 
 class HastaKayitEkrani(QWidget):
@@ -15,26 +18,34 @@ class HastaKayitEkrani(QWidget):
         label_soyad = QLabel('Soyad:')
         label_yas = QLabel('Yaş:')
         label_cinsiyet = QLabel('Cinsiyet:')
+        label_email = QLabel('E-Posta:')
+        label_sifre = QLabel('Şifre:')
 
-        line_edit_ad = QLineEdit(self)
-        line_edit_soyad = QLineEdit(self)
-        line_edit_yas = QLineEdit(self)
+        self.line_edit_ad = QLineEdit(self)
+        self.line_edit_soyad = QLineEdit(self)
+        self.line_edit_yas = QLineEdit(self)
+        self.line_edit_email = QLineEdit(self)
+        self.line_edit_sifre = QLineEdit(self)
+        self.line_edit_sifre.setEchoMode(QLineEdit.Password)
 
-        combo_cinsiyet = QComboBox(self)
-        combo_cinsiyet.addItem("Erkek")
-        combo_cinsiyet.addItem("Kadın")
+        self.combo_cinsiyet = QComboBox(self)
+        self.combo_cinsiyet.addItem("Erkek")
+        self.combo_cinsiyet.addItem("Kadın")
 
-        btn_kaydet = QPushButton('Kaydet', self)
+        btn_kaydet = QPushButton('Kaydol', self)
         btn_kaydet.clicked.connect(self.kaydet_clicked)
 
-        self.setStyleSheet("background-color: #f5f5f5; color: #333;")  # Arka plan rengi ve metin rengi
-        btn_kaydet.setStyleSheet("background-color: #3498db; color: white; border-radius: 5px; padding: 5px;")
+        self.setStyleSheet("background-color: #f5f5f5; color: #333;")
+        btn_kaydet.setStyleSheet("background-color: #3498db; color: white;"
+                                 " border-radius: 5px; padding: 5px;")
 
         form_layout = QFormLayout()
-        form_layout.addRow(label_ad, line_edit_ad)
-        form_layout.addRow(label_soyad, line_edit_soyad)
-        form_layout.addRow(label_yas, line_edit_yas)
-        form_layout.addRow(label_cinsiyet, combo_cinsiyet)
+        form_layout.addRow(label_ad, self.line_edit_ad)
+        form_layout.addRow(label_soyad, self.line_edit_soyad)
+        form_layout.addRow(label_yas, self.line_edit_yas)
+        form_layout.addRow(label_cinsiyet, self.combo_cinsiyet)
+        form_layout.addRow(label_email, self.line_edit_email)
+        form_layout.addRow(label_sifre, self.line_edit_sifre)
 
         main_layout = QVBoxLayout()
         main_layout.addLayout(form_layout)
@@ -53,11 +64,51 @@ class HastaKayitEkrani(QWidget):
         self.show()
 
     def kaydet_clicked(self):
-        # to-do
-        pass
+        if self._kontrol_veriler:
+            reply = QMessageBox.question(self, 'Onay', 'Verilerinizin kaydedilmesini onaylıyor musunuz?',
+                                         QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self._kaydet_veriler()
+            else:
+                QMessageBox.information(self, 'İptal', 'Kaydetme işlemi iptal edildi.')
+        else:
+            QMessageBox.warning(self, 'Uyarı', 'Eksik veya geçersiz bilgiler. Lütfen kontrol edin.')
+
+    def _kontrol_veriler(self):
+        email = self.line_edit_email.text()
+        sifre = self.line_edit_sifre.text()
+
+        if not email or not sifre:
+            return False
+
+        return True
+
+    def _kaydet_veriler(self):
+        try:
+            veriler = {
+                'ad': self.line_edit_ad.text,
+                'soyad': self.line_edit_soyad.text,
+                'yas': self.line_edit_yas.text,
+                'cinsiyet': self.combo_cinsiyet.currentText,
+                'teshis': 0
+            }
+
+            with sqlite3.connect('hasta_teshis.db') as db:
+                db.execute(
+                    "INSERT INTO Hasta (ad, soyad, yas, cinsiyet, teshis) "
+                    "VALUES (:ad, :soyad, :yas, :cinsiyet, :teshis)",
+                    veriler)
+                db.commit()
+                db.close()
+            QMessageBox.information(self, 'Onay', 'Kaydetme işlemi başarılı.')
+
+        except Exception as e:
+            QMessageBox.warning(self, 'Hata', str(e))
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     hasta_kayit_ekrani = HastaKayitEkrani()
+
+    hasta_kayit_ekrani.show()
     sys.exit(app.exec_())
