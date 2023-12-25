@@ -20,6 +20,24 @@ class HastaRepository:
             print(str(e))
             return False
 
+    def getir_by_mail(self, mail):
+        try:
+            db = sqlite3.connect(self.db_path)
+            cursor = db.cursor()
+
+            cursor.execute("SELECT * FROM Hasta WHERE mail = ?", (mail,))
+            result = cursor.fetchone()
+
+            db.close()
+
+            if result:
+                ad, soyad, dogum_tarihi, cinsiyet, mail, sifre = result
+                return Hasta(ad, soyad, dogum_tarihi, cinsiyet, mail, sifre)
+            else:
+                return None
+        except Exception as e:
+            print(str(e))
+            return None
     def kaydet(self, hasta):
         try:
             db = sqlite3.connect(self.db_path)

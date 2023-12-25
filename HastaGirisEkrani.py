@@ -1,4 +1,7 @@
 import sys
+import hashlib
+import re
+
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton,
@@ -6,6 +9,7 @@ from PyQt5.QtWidgets import (
 )
 from HastaRepository import HastaRepository
 from HastaKayitEkrani import HastaKayitEkrani
+
 
 class HastaGirisEkrani(QWidget):
     def __init__(self):
@@ -58,19 +62,39 @@ class HastaGirisEkrani(QWidget):
 
     def giris_clicked(self):
         mail = self.line_edit_email.text()
-        sifre = self.line_edit_sifre.text()
-        hatirla_durumu = self.check_box_hatirla.isChecked()
+        sifre = self.md5_hash(self.line_edit_sifre.text())
 
-        # TODO: Giriş işlemleri
+        hatirla_durumu = self.check_box_hatirla.isChecked()
+        mail_pattern = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]{2,}$')
+
+        if not mail_pattern.match(mail):
+            QMessageBox.warning(self, 'Uyarı', 'Geçerli bir e-posta adresi girin.')
+            return
+
+        hasta_repository = HastaRepository()
+        hasta = hasta_repository.getir_by_mail(mail)
+
+        if hasta is not None and hasta.sifre == sifre:
+            QMessageBox.information(self, 'Başarılı', 'Giriş başarılı.')
+        else:
+            QMessageBox.warning(self, 'Hata', 'E-posta veya şifre yanlış.')
+
     def show_kayit_ekrani(self):
         self.kayit_ekrani.show()
         self.hide()
+
+    @staticmethod
+    def md5_hash(password):
+        hashed_password = hashlib.md5(password.encode()).hexdigest()
+        return hashed_password
+
 
 def main():
     app = QApplication(sys.argv)
     hasta_giris_ekrani = HastaGirisEkrani()
     hasta_giris_ekrani.show()
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     main()
