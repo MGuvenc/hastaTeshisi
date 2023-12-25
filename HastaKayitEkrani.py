@@ -1,5 +1,6 @@
 import hashlib
 import re
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QDate, QRegExp
 from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import (
@@ -54,7 +55,8 @@ class HastaKayitEkrani(QWidget):
         form_layout = QFormLayout()
         ad_validator = QRegExpValidator(QRegExp("^[a-zA-Z]*$"))
         soyad_validator = QRegExpValidator(QRegExp("^[a-zA-Z]*$"))
-
+        self.line_edit_ad.setValidator(ad_validator)
+        self.line_edit_soyad.setValidator(soyad_validator)
         form_layout.addRow(label_ad, self.line_edit_ad)
         form_layout.addRow(label_soyad, self.line_edit_soyad)
         form_layout.addRow(label_dogum_tarihi, self.date_edit_dogum_tarihi)
@@ -74,6 +76,7 @@ class HastaKayitEkrani(QWidget):
         self.setFixedSize(width, height)
 
         self.setWindowTitle('Hasta Kayıt Ekranı')
+        self.setWindowIcon(QIcon('firat_uni.png'))
 
     @staticmethod
     def md5_hash(password):
