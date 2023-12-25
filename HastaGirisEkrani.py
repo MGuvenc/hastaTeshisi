@@ -1,9 +1,11 @@
 import sys
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton, QFormLayout, QVBoxLayout, QMessageBox
+from PyQt5.QtWidgets import (
+    QApplication, QWidget, QLabel, QLineEdit, QPushButton,
+    QFormLayout, QVBoxLayout, QMessageBox, QCheckBox
+)
 from HastaRepository import HastaRepository
 from HastaKayitEkrani import HastaKayitEkrani
-
 
 class HastaGirisEkrani(QWidget):
     def __init__(self):
@@ -12,6 +14,8 @@ class HastaGirisEkrani(QWidget):
         self.kayit_ekrani = HastaKayitEkrani(self)
         self.line_edit_email = QLineEdit(self)
         self.line_edit_sifre = QLineEdit(self)
+        self.check_box_hatirla = QCheckBox("Beni Hatırla", self)
+
         self.init_ui()
 
     def init_ui(self):
@@ -35,6 +39,7 @@ class HastaGirisEkrani(QWidget):
         form_layout.addRow(label_sifre, self.line_edit_sifre)
 
         button_layout = QVBoxLayout()
+        button_layout.addWidget(self.check_box_hatirla)
         button_layout.addWidget(btn_giris)
         button_layout.addWidget(btn_kayit_ekrani)
 
@@ -52,20 +57,20 @@ class HastaGirisEkrani(QWidget):
         self.setWindowIcon(QIcon('firat_uni.png'))
 
     def giris_clicked(self):
-        pass
+        mail = self.line_edit_email.text()
+        sifre = self.line_edit_sifre.text()
+        hatirla_durumu = self.check_box_hatirla.isChecked()
 
-
+        # TODO: Giriş işlemleri
     def show_kayit_ekrani(self):
         self.kayit_ekrani.show()
         self.hide()
-
 
 def main():
     app = QApplication(sys.argv)
     hasta_giris_ekrani = HastaGirisEkrani()
     hasta_giris_ekrani.show()
     sys.exit(app.exec_())
-
 
 if __name__ == "__main__":
     main()
