@@ -13,9 +13,10 @@ def create_tables(conn):
             id INTEGER PRIMARY KEY,
             ad TEXT NOT NULL,
             soyad TEXT NOT NULL,
-            yas INTEGER,
+            dogum_tarihi TEXT NOT NULL,
             cinsiyet TEXT,
-            teshis TEXT
+            mail TEXT,
+            sifre TEXT
         )
     ''')
 
