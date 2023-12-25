@@ -1,9 +1,7 @@
 import hashlib
 import re
-import sys
-
 from PyQt5.QtCore import QDate, QRegExp
-from PyQt5.QtGui import QIcon, QRegExpValidator
+from PyQt5.QtGui import QRegExpValidator
 from PyQt5.QtWidgets import (
     QWidget, QLabel, QLineEdit, QPushButton, QVBoxLayout,
     QFormLayout, QComboBox, QMessageBox, QDateEdit, QApplication
@@ -14,8 +12,10 @@ from HastaRepository import HastaRepository
 
 
 class HastaKayitEkrani(QWidget):
-    def __init__(self):
+    def __init__(self, hasta_giris_ekrani):
         super().__init__()
+
+        self.hasta_giris_ekrani = hasta_giris_ekrani
 
         self.combo_cinsiyet = QComboBox(self)
         self.line_edit_sifre = QLineEdit(self)
@@ -44,18 +44,16 @@ class HastaKayitEkrani(QWidget):
         btn_kaydet = QPushButton('Kaydol', self)
         btn_kaydet.clicked.connect(self.kaydet_clicked)
 
+        btn_giris_ekrani = QPushButton('Giriş Ekranı', self)
+        btn_giris_ekrani.clicked.connect(self.show_giris_ekrani)
+
         self.setStyleSheet("background-color: #f5f5f5; color: #333;")
         btn_kaydet.setStyleSheet("background-color: #3498db; color: white;"
                                  " border-radius: 5px; padding: 5px;")
 
         form_layout = QFormLayout()
-
-        # Ad ve soyad için sadece harf girişi kabul eden validator'ları ayarla
         ad_validator = QRegExpValidator(QRegExp("^[a-zA-Z]*$"))
-        self.line_edit_ad.setValidator(ad_validator)
-
         soyad_validator = QRegExpValidator(QRegExp("^[a-zA-Z]*$"))
-        self.line_edit_soyad.setValidator(soyad_validator)
 
         form_layout.addRow(label_ad, self.line_edit_ad)
         form_layout.addRow(label_soyad, self.line_edit_soyad)
@@ -67,6 +65,7 @@ class HastaKayitEkrani(QWidget):
         main_layout = QVBoxLayout()
         main_layout.addLayout(form_layout)
         main_layout.addWidget(btn_kaydet)
+        main_layout.addWidget(btn_giris_ekrani)
 
         self.setLayout(main_layout)
 
@@ -74,11 +73,7 @@ class HastaKayitEkrani(QWidget):
         height = 300
         self.setFixedSize(width, height)
 
-        icon = QIcon('firat_uni.png')
-        self.setWindowIcon(icon)
-
         self.setWindowTitle('Hasta Kayıt Ekranı')
-        self.show()
 
     @staticmethod
     def md5_hash(password):
@@ -122,10 +117,6 @@ class HastaKayitEkrani(QWidget):
             else:
                 QMessageBox.warning(self, 'Hata', 'Kaydetme işlemi sırasında bir hata oluştu.')
 
-
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    hasta_kayit_ekrani = HastaKayitEkrani()
-
-    hasta_kayit_ekrani.show()
-    sys.exit(app.exec_())
+    def show_giris_ekrani(self):
+        self.hasta_giris_ekrani.show()
+        self.hide()
