@@ -113,12 +113,20 @@ class HastaKayitEkrani(QWidget):
     def kaydet_clicked(self):
         veriler = self._kontrol_veriler()
         if veriler is not None:
-            hasta = Hasta(**veriler)
-            hasta_repository = HastaRepository()
-            if hasta_repository.kaydet(hasta):
-                QMessageBox.information(self, 'Onay', 'Kaydetme işlemi başarılı.')
+            onay = self.onay_al("Kaydetme İşlemi", "Verilerinizi kaydetmek istediğinizden emin misiniz?")
+            if onay == QMessageBox.Yes:
+                hasta = Hasta(**veriler)
+                hasta_repository = HastaRepository()
+                if hasta_repository.kaydet(hasta):
+                    QMessageBox.information(self, 'Onay', 'Kaydetme işlemi başarılı.')
+                else:
+                    QMessageBox.warning(self, 'Hata', 'Kaydetme işlemi sırasında bir hata oluştu.')
             else:
-                QMessageBox.warning(self, 'Hata', 'Kaydetme işlemi sırasında bir hata oluştu.')
+                QMessageBox.warning(self, 'İptal', 'Kaydetme işlemi iptal edildi.')
+
+    def onay_al(self, baslik, mesaj):
+        onay = QMessageBox.question(self, baslik, mesaj, QMessageBox.Yes | QMessageBox.No)
+        return onay
 
     def show_giris_ekrani(self):
         self.hasta_giris_ekrani.show()
