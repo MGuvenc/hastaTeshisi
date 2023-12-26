@@ -1,7 +1,7 @@
 import sys
 import hashlib
 import re
-
+from PyQt5.QtCore import Qt, QSettings
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton,
@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
 )
 from HastaRepository import HastaRepository
 from HastaKayitEkrani import HastaKayitEkrani
+from Hasta import Hasta
 
 
 class HastaGirisEkrani(QWidget):
@@ -19,6 +20,8 @@ class HastaGirisEkrani(QWidget):
         self.line_edit_email = QLineEdit(self)
         self.line_edit_sifre = QLineEdit(self)
         self.check_box_hatirla = QCheckBox("Beni Hatırla", self)
+
+        self.settings = QSettings("FiratUni", "HastaGirisEkrani")
 
         self.init_ui()
 
@@ -60,24 +63,31 @@ class HastaGirisEkrani(QWidget):
         self.setWindowTitle('Hasta Giriş Ekranı')
         self.setWindowIcon(QIcon('firat_uni.png'))
 
+        self.check_box_hatirla.setChecked(self.settings.value("BeniHatirla", False, type=bool))
+        if self.check_box_hatirla.isChecked():
+            self.line_edit_email.setText(self.settings.value("KayitEmail", "", type=str))
+            self.line_edit_sifre.setText(self.settings.value("KayitSifre", "", type=str))
+
     def giris_clicked(self):
-        mail = self.line_edit_email.text()
-        sifre = self.md5_hash(self.line_edit_sifre.text())
+        try:
+            mail = self.line_edit_email.text()
+            sifre = self.line_edit_sifre.text()
 
-        hatirla_durumu = self.check_box_hatirla.isChecked()
-        mail_pattern = re.compile(r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]{2,}$')
+            if not mail or not sifre:
+                print("Lütfen e-posta ve şifre alanlarını doldurunuz.")
+                return
 
-        if not mail_pattern.match(mail):
-            QMessageBox.warning(self, 'Uyarı', 'Geçerli bir e-posta adresi girin.')
-            return
+            hashed_password = self.md5_hash(sifre)
 
-        hasta_repository = HastaRepository()
-        hasta = hasta_repository.getir_by_mail(mail)
+            hasta_repository = HastaRepository()
+            hasta = hasta_repository.getir_by_mail(mail)
 
-        if hasta is not None and hasta.sifre == sifre:
-            QMessageBox.information(self, 'Başarılı', 'Giriş başarılı.')
-        else:
-            QMessageBox.warning(self, 'Hata', 'E-posta veya şifre yanlış.')
+            if hasta:
+                print("Hasta bulundu: " + hasta.ad)
+            else:
+                print("Hasta bulunamadı.")
+        except Exception as e:
+            print("Bir hata oluştu:", str(e))
 
     def show_kayit_ekrani(self):
         self.kayit_ekrani.show()

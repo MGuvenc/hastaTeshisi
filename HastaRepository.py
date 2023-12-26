@@ -1,5 +1,5 @@
 import sqlite3
-
+from Hasta import Hasta
 
 class HastaRepository:
     def __init__(self, db_path='hasta_teshis.db'):
@@ -24,17 +24,15 @@ class HastaRepository:
         try:
             db = sqlite3.connect(self.db_path)
             cursor = db.cursor()
-
-            cursor.execute("SELECT * FROM Hasta WHERE mail = ?", (mail,))
-            result = cursor.fetchone()
-
+            cursor.execute("SELECT * FROM Hasta WHERE mail=?", (mail,))
+            data = cursor.fetchone()
             db.close()
-
-            if result:
-                ad, soyad, dogum_tarihi, cinsiyet, mail, sifre = result
-                return Hasta(ad, soyad, dogum_tarihi, cinsiyet, mail, sifre)
+            print(data)
+            if data:
+                return Hasta(*data)
             else:
                 return None
+
         except Exception as e:
             print(str(e))
             return None
