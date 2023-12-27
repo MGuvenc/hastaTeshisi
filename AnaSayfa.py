@@ -4,18 +4,21 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHB
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import sys
-
+import cv2, os
+from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtWidgets import QMessageBox
 
 class AnaSayfa(QMainWindow):
     def __init__(self, hasta_adi, hasta_soyadi):
         super().__init__()
 
+        self.filename_label = None
         self.hasta_adi = hasta_adi
         self.hasta_soyadi = hasta_soyadi
         self.setFixedSize(400, 300)
         self.setWindowTitle('Veri Giriş Ekranı')
         self.setWindowIcon(QIcon('firat_uni.png'))
-
+        self.image_label = QLabel()
         self.init_ui()
 
     def init_ui(self):
@@ -32,8 +35,9 @@ class AnaSayfa(QMainWindow):
         image_upload_button = QPushButton('Resim Yükle')
         send_button = QPushButton('Analiz Et')
 
-        image_label = QLabel()
-        image_label.setAlignment(Qt.AlignCenter)
+        self.filename_label = QLabel()
+        self.image_label = QLabel()
+
         image_upload_button.clicked.connect(self.load_image)
 
         send_button.clicked.connect(self.send_data)
@@ -41,9 +45,9 @@ class AnaSayfa(QMainWindow):
                                   "border-radius: 5px; padding: 5px;")
 
         option_layout = QFormLayout()
-        option_layout.addRow('Model:', option_combobox)
-        option_layout.addRow('Veri:', image_upload_button)
-        option_layout.addRow('', image_label)
+        option_layout.addRow('Model Seç:', option_combobox)
+        option_layout.addRow('Veri Seç:', image_upload_button)
+        option_layout.addRow(self.filename_label, self.image_label)
 
         main_layout = QVBoxLayout()
         main_layout.addLayout(option_layout)
@@ -57,8 +61,30 @@ class AnaSayfa(QMainWindow):
         profil.addAction('Çıkış', self.close)
 
     def load_image(self):
-        pass
-        # To-do
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        file_name, _ = QFileDialog.getOpenFileName(self, "Resim Yükle", "",
+                                                   "Images (*.png *.jpg *.bmp *.jpeg);;All Files (*)", options=options)
+
+        try:
+            if file_name:
+                original_image = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
+
+                if original_image is not None:
+                    resized_image = cv2.resize(original_image, (128, 128))
+                    self.display_image(resized_image)
+                    self.filename_label.setText(f'Yüklenen:')
+                    QMessageBox.information(self, "Başarılı", "Resim yüklendi..")
+                else:
+                    QMessageBox.warning(self, "Hata", "Resim yüklenemedi. Lütfen geçerli bir resim seçin.")
+        except Exception as e:
+            QMessageBox.critical(self, "Hata", f"Hata oluştu: {str(e)}")
+
+    def display_image(self, image):
+        height, width = image.shape
+        bytes_per_line = width
+        q_image = QImage(image.data, width, height, bytes_per_line, QImage.Format_Grayscale8)
+        self.image_label.setPixmap(QPixmap.fromImage(q_image))
 
     def send_data(self):
         pass
