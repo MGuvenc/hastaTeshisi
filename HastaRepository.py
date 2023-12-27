@@ -1,6 +1,7 @@
 import sqlite3
 from Hasta import Hasta
 
+
 class HastaRepository:
     def __init__(self, db_path='hasta_teshis.db'):
         self.db_path = db_path
@@ -27,15 +28,13 @@ class HastaRepository:
             cursor.execute("SELECT * FROM Hasta WHERE mail=?", (mail,))
             data = cursor.fetchone()
             db.close()
-            print(data)
             if data:
                 return Hasta(*data)
             else:
                 return None
-
-        except Exception as e:
-            print(str(e))
+        except:
             return None
+
     def kaydet(self, hasta):
         try:
             db = sqlite3.connect(self.db_path)

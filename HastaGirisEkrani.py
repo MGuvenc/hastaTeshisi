@@ -74,7 +74,7 @@ class HastaGirisEkrani(QWidget):
             sifre = self.line_edit_sifre.text()
 
             if not mail or not sifre:
-                print("Lütfen e-posta ve şifre alanlarını doldurunuz.")
+                QMessageBox.warning(self, 'Uyarı', 'Lütfen tüm alanları doldurun.')
                 return
 
             hashed_password = self.md5_hash(sifre)
@@ -83,11 +83,14 @@ class HastaGirisEkrani(QWidget):
             hasta = hasta_repository.getir_by_mail(mail)
 
             if hasta:
-                print("Hasta bulundu: " + hasta.ad)
+                if hasta.sifre == hashed_password:
+                    QMessageBox.information(self, 'Onay', 'Giriş başarılı.')
+                else:
+                    QMessageBox.warning(self, 'Uyarı', 'Kullanıcı adı veya şifre yanlış.')
             else:
-                print("Hasta bulunamadı.")
-        except Exception as e:
-            print("Bir hata oluştu:", str(e))
+                QMessageBox.warning(self, 'Uyarı', 'Kullanıcı adı veya şifre yanlış.')
+        except:
+            QMessageBox.critical(self, '404', 'Beklenmedik bir sorun oluştu.')
 
     def show_kayit_ekrani(self):
         self.kayit_ekrani.show()
