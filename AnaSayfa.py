@@ -1,12 +1,11 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, \
-    QFormLayout, QComboBox, QLineEdit, QFileDialog, QSizePolicy, QMenuBar
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
 import sys
-import cv2, os
-from PyQt5.QtGui import QImage, QPixmap
+
+import cv2
+from PyQt5.QtGui import QImage, QPixmap, QIcon
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, \
+    QFormLayout, QComboBox, QFileDialog, QMenuBar, QMainWindow
 from PyQt5.QtWidgets import QMessageBox
+
 
 class AnaSayfa(QMainWindow):
     def __init__(self, hasta_adi, hasta_soyadi):
