@@ -1,15 +1,17 @@
-import sys
 import hashlib
-import re
-from PyQt5.QtCore import Qt, QSettings
+import sys
+import traceback
+
+from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QLineEdit, QPushButton,
     QFormLayout, QVBoxLayout, QMessageBox, QCheckBox
 )
-from HastaRepository import HastaRepository
+
+from AnaSayfa import AnaSayfa
 from HastaKayitEkrani import HastaKayitEkrani
-from Hasta import Hasta
+from HastaRepository import HastaRepository
 
 
 class HastaGirisEkrani(QWidget):
@@ -17,6 +19,7 @@ class HastaGirisEkrani(QWidget):
         super().__init__()
 
         self.kayit_ekrani = HastaKayitEkrani(self)
+        self.anasayfa = None
         self.line_edit_email = QLineEdit(self)
         self.line_edit_sifre = QLineEdit(self)
         self.check_box_hatirla = QCheckBox("Beni Hatırla", self)
@@ -84,17 +87,24 @@ class HastaGirisEkrani(QWidget):
 
             if hasta:
                 if hasta.sifre == hashed_password:
-                    QMessageBox.information(self, 'Onay', 'Giriş başarılı.')
+                    self.anasayfa = AnaSayfa()
+                    self.anasayfa.show()
+                    self.on_login_successful()
                 else:
                     QMessageBox.warning(self, 'Uyarı', 'Kullanıcı adı veya şifre yanlış.')
             else:
                 QMessageBox.warning(self, 'Uyarı', 'Kullanıcı adı veya şifre yanlış.')
-        except:
-            QMessageBox.critical(self, '404', 'Beklenmedik bir sorun oluştu.')
+        except Exception as e:
+            print("Exception occurred:", str(e))
+            traceback.print_exc()
+            QMessageBox.critical(self, '404', f'Beklenmedik bir sorun oluştu: {str(e)}')
 
     def show_kayit_ekrani(self):
+        self.kayit_ekrani = KayitEkrani()
         self.kayit_ekrani.show()
-        self.hide()
+
+    def on_login_successful(self):
+        self.close()
 
     @staticmethod
     def md5_hash(password):
