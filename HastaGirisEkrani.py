@@ -90,6 +90,14 @@ class HastaGirisEkrani(QWidget):
                     self.anasayfa = AnaSayfa()
                     self.anasayfa.show()
                     self.on_login_successful()
+                    if self.check_box_hatirla.isChecked():
+                        self.settings.setValue("BeniHatirla", True)
+                        self.settings.setValue("KayitEmail", mail)
+                        self.settings.setValue("KayitSifre", sifre)
+                    else:
+                        self.settings.setValue("BeniHatirla", False)
+                        self.settings.setValue("KayitEmail", "")
+                        self.settings.setValue("KayitSifre", "")
                 else:
                     QMessageBox.warning(self, 'Uyarı', 'Kullanıcı adı veya şifre yanlış.')
             else:
