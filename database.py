@@ -14,9 +14,9 @@ def create_tables(conn):
             ad TEXT NOT NULL,
             soyad TEXT NOT NULL,
             dogum_tarihi TEXT NOT NULL,
-            cinsiyet TEXT,
-            mail TEXT,
-            sifre TEXT
+            cinsiyet TEXT NOT NULL,
+            mail TEXT NOT NULL,
+            sifre TEXT NOT NULL
         )
     ''')
 
@@ -24,12 +24,27 @@ def create_tables(conn):
         CREATE TABLE IF NOT EXISTS MRGoruntuleri (
             id INTEGER PRIMARY KEY,
             hasta_id INTEGER,
+            model TEXT NOT NULL,
             goruntu_path TEXT NOT NULL,
             FOREIGN KEY (hasta_id) REFERENCES Hasta(id)
         )
     ''')
 
     conn.commit()
+
+
+def insert_into_mrgoruntuleri(conn, hasta_id, model, goruntu_path):
+    cur = conn.cursor()
+    try:
+        query = '''INSERT INTO MRGoruntuleri (hasta_id, model, goruntu_path) 
+                   VALUES (?, ?, ?)'''
+        cur.execute(query, (hasta_id, model, goruntu_path))
+        conn.commit()
+        print("Resim ve model başarıyla eklendi.")
+    except Exception as e:
+        print(f"Hata oluştu: {str(e)}")
+    finally:
+        cur.close()
 
 
 def close_connection(conn):

@@ -1,17 +1,25 @@
 import sys
-
+import uuid
+import os
 import cv2
+import sqlite3
 from PyQt5.QtGui import QImage, QPixmap, QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QPushButton, \
     QFormLayout, QComboBox, QFileDialog, QMenuBar, QMainWindow
 from PyQt5.QtWidgets import QMessageBox
 
+from database import insert_into_mrgoruntuleri
+
 
 class AnaSayfa(QMainWindow):
-    def __init__(self, hasta_adi, hasta_soyadi):
+    def __init__(self, hasta_id=1, hasta_adi='', hasta_soyadi=''):
         super().__init__()
 
+        self.unique_filename = None
+        self.selected_option = None
+        self.image_path = None
         self.filename_label = None
+        self.hasta_id = hasta_id
         self.hasta_adi = hasta_adi
         self.hasta_soyadi = hasta_soyadi
         self.setFixedSize(400, 300)
@@ -36,7 +44,7 @@ class AnaSayfa(QMainWindow):
 
         self.filename_label = QLabel()
         self.image_label = QLabel()
-
+        self.selected_option = option_combobox.currentText()
         image_upload_button.clicked.connect(self.load_image)
 
         send_button.clicked.connect(self.send_data)
@@ -62,8 +70,15 @@ class AnaSayfa(QMainWindow):
     def load_image(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        file_name, _ = QFileDialog.getOpenFileName(self, "Resim Yükle", "",
-                                                   "Images (*.png *.jpg *.bmp *.jpeg);;All Files (*)", options=options)
+        file_name, _ = QFileDialog.getOpenFileName(self, "Resim Yükle", "", "Images (*.png *.jpg *.jpeg);"
+                                                                            ";All Files (*)", options=options)
+
+        if not file_name:
+            return
+
+        if os.path.getsize(file_name) / (1024 * 1024) > 10:
+            QMessageBox.warning(self, "Hata", "Resim çok büyük. Lütfen 10 MB'dan küçük bir resim seçin.")
+            return
 
         try:
             if file_name:
@@ -72,7 +87,11 @@ class AnaSayfa(QMainWindow):
                 if original_image is not None:
                     resized_image = cv2.resize(original_image, (128, 128))
                     self.display_image(resized_image)
+
+                    self.unique_filename = str(uuid.uuid4()) + '.png'
+                    cv2.imwrite('resimler/' + self.unique_filename, resized_image)
                     self.filename_label.setText(f'Yüklenen:')
+
                     QMessageBox.information(self, "Başarılı", "Resim yüklendi..")
                 else:
                     QMessageBox.warning(self, "Hata", "Resim yüklenemedi. Lütfen geçerli bir resim seçin.")
@@ -80,19 +99,40 @@ class AnaSayfa(QMainWindow):
             QMessageBox.critical(self, "Hata", f"Hata oluştu: {str(e)}")
 
     def display_image(self, image):
-        height, width = image.shape
-        bytes_per_line = width
-        q_image = QImage(image.data, width, height, bytes_per_line, QImage.Format_Grayscale8)
-        self.image_label.setPixmap(QPixmap.fromImage(q_image))
+        try:
+            height, width = image.shape
+            bytes_per_line = width
+            q_image = QImage(image.data, width, height, bytes_per_line, QImage.Format_Grayscale8)
+            self.image_label.setPixmap(QPixmap.fromImage(q_image))
+        except Exception as e:
+            error_message = f"Hata oluştu: {str(e)}"
+            QMessageBox.critical(self, "Hata", error_message)
+            QEventLoop(self).exec_()
 
     def send_data(self):
-        pass
-        # To-do
+        try:
+            if not self.filename_label.text().strip():
+                QMessageBox.warning(self, "Hata", "Resim seçilmedi. Lütfen bir resim seçin.")
+                return
+
+            self.image_path = 'resimler/' + self.unique_filename
+            insert_into_mrgoruntuleri(sqlite3.connect('hasta_teshis.db'), self.hasta_id, self.selected_option,
+                                      self.image_path)
+
+            QMessageBox.information(self, "Başarılı", "Veritabanına kaydedildi.")
+            self.clear_image()
+        except Exception as e:
+            QMessageBox.critical(self, "Hata", f"Hata oluştu: {str(e)}")
+
+    def clear_image(self):
+        self.filename_label.setText('')
+        self.image_label.clear()
+        self.unique_filename = None
 
 
 def main():
     app = QApplication(sys.argv)
-    ana_sayfa = AnaSayfa('', '')
+    ana_sayfa = AnaSayfa(1, '', '')
     ana_sayfa.show()
     sys.exit(app.exec_())
 
