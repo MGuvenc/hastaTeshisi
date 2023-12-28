@@ -98,7 +98,7 @@ class HastaKayitEkrani(QWidget):
                                  " border-radius: 5px; padding: 5px;")
 
         form_layout = QFormLayout()
-        ad_validator = QRegExpValidator(QRegExp("^[a-zA-ZğüşıöçĞÜŞİÖÇ]*$"))
+        ad_validator = QRegExpValidator(QRegExp("^[a-zA-ZğüşıöçĞÜŞİÖÇ ]*$"))
         soyad_validator = QRegExpValidator(QRegExp("^[a-zA-ZğüşıöçĞÜŞİÖÇ]*$"))
 
         self.line_edit_ad.setValidator(ad_validator)

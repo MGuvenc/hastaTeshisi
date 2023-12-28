@@ -87,7 +87,7 @@ class HastaGirisEkrani(QWidget):
 
             if hasta:
                 if hasta.sifre == hashed_password:
-                    self.anasayfa = AnaSayfa()
+                    self.anasayfa = AnaSayfa(hasta.id, hasta.ad, hasta.soyad)
                     self.anasayfa.show()
                     self.on_login_successful()
                     if self.check_box_hatirla.isChecked():
@@ -108,8 +108,9 @@ class HastaGirisEkrani(QWidget):
             QMessageBox.critical(self, '404', f'Beklenmedik bir sorun oluştu: {str(e)}')
 
     def show_kayit_ekrani(self):
-        self.kayit_ekrani = KayitEkrani()
+        self.kayit_ekrani = HastaKayitEkrani(self)
         self.kayit_ekrani.show()
+        self.on_login_successful()
 
     def on_login_successful(self):
         self.close()
